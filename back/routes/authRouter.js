@@ -41,11 +41,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 exports.__esModule = true;
 var express_1 = __importDefault(require("express"));
 var axios_1 = __importDefault(require("axios"));
+var querystring_1 = __importDefault(require("querystring"));
 var router = express_1["default"].Router();
 var KAKAO_OAUTH_TOKEN_API_URL = "https://kauth.kakao.com/oauth/token";
 var KAKAO_GRANT_TYPE = "authorization_code";
 var KAKAO_CLIENT_id = "4fa59b6793e017cb3c54142657950f26";
-var KAKAO_REDIRECT_URL = "http://localhost:80/api/user/kakao/redirect";
+var KAKAO_REDIRECT_URL = "http://localhost:80/api/auth/kakao/redirect";
+var KAKAO_GET_USER_DATA_API_URL = "https://kapi.kakao.com/v2/user/me";
 router.get("/kakao/redirect", function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     var code;
     return __generator(this, function (_a) {
@@ -58,12 +60,38 @@ router.get("/kakao/redirect", function (req, res, next) { return __awaiter(void 
                 }
             })
                 .then(function (result) {
-                console.log(result);
-                // 토큰을 활용한 로직을 적어주면된다.
+                axios_1["default"]
+                    .get("" + KAKAO_GET_USER_DATA_API_URL, {
+                    headers: {
+                        Authorization: "Bearer " + result.data.access_token
+                    }
+                })
+                    .then(function (response) {
+                    var query = querystring_1["default"].stringify({
+                        accessToken: result.data.access_token,
+                        refreshToken: result.data.refresh_token,
+                        nickname: response.data.properties.nickname,
+                        email: response.data.kakao_account.email,
+                        image: response.data.properties.profile_image
+                    });
+                    res.redirect("http://localhost:3000/loginSuccess?" + query);
+                });
             })["catch"](function (e) {
                 console.log(e);
                 res.send(e);
             });
+        }
+        catch (e) {
+            console.log(e);
+            res.send(e);
+        }
+        return [2 /*return*/];
+    });
+}); });
+router.post("/tokenValidTest", function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    return __generator(this, function (_a) {
+        try {
+            console.log(req.headers.authorization);
         }
         catch (e) {
             console.log(e);
