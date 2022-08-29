@@ -10,7 +10,7 @@ var cookie_parser_1 = __importDefault(require("cookie-parser"));
 var dotenv_1 = __importDefault(require("dotenv"));
 var hpp_1 = __importDefault(require("hpp"));
 var helmet_1 = __importDefault(require("helmet"));
-var userRouter_1 = __importDefault(require("./routes/userRouter"));
+var authRouter_1 = __importDefault(require("./routes/authRouter"));
 dotenv_1["default"].config();
 var app = express_1["default"]();
 var prod = process.env.NODE_ENV === "production";
@@ -34,7 +34,7 @@ else {
 app.use(express_1["default"].json());
 app.use(express_1["default"].urlencoded({ extended: true }));
 app.use(cookie_parser_1["default"](process.env.COOKIE_SECRET));
-app.use("/api/user", userRouter_1["default"]);
+app.use("/api/auth", authRouter_1["default"]);
 app.get("/", function (req, res, next) {
     res.send("server is running");
 });

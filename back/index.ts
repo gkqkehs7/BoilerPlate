@@ -6,7 +6,7 @@ import dotenv from "dotenv";
 import hpp from "hpp";
 import helmet from "helmet";
 
-import userRouter from "./routes/userRouter";
+import authRouter from "./routes/authRouter";
 dotenv.config();
 const app = express();
 const prod: boolean = process.env.NODE_ENV === "production";
@@ -37,7 +37,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser(process.env.COOKIE_SECRET));
 
-app.use("/api/user", userRouter);
+app.use("/api/auth", authRouter);
 app.get("/", (req, res, next) => {
   res.send("server is running");
 });
