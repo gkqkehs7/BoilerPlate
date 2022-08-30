@@ -35,6 +35,10 @@ app.use(express_1["default"].json());
 app.use(express_1["default"].urlencoded({ extended: true }));
 app.use(cookie_parser_1["default"](process.env.COOKIE_SECRET));
 app.use("/api/auth", authRouter_1["default"]);
+app.use(function (err, req, res, next) {
+    console.error(err);
+    res.status(500).send(err);
+});
 app.get("/", function (req, res, next) {
     res.send("server is running");
 });

@@ -38,6 +38,19 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser(process.env.COOKIE_SECRET));
 
 app.use("/api/auth", authRouter);
+
+app.use(
+  (
+    err: any,
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    console.error(err);
+    res.status(500).send(err);
+  }
+);
+
 app.get("/", (req, res, next) => {
   res.send("server is running");
 });

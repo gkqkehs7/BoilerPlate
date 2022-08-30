@@ -42,60 +42,140 @@ exports.__esModule = true;
 var express_1 = __importDefault(require("express"));
 var axios_1 = __importDefault(require("axios"));
 var querystring_1 = __importDefault(require("querystring"));
+var url_1 = require("../constants/url");
+var auth_1 = require("../middlewares/auth");
 var router = express_1["default"].Router();
-var KAKAO_OAUTH_TOKEN_API_URL = "https://kauth.kakao.com/oauth/token";
-var KAKAO_GRANT_TYPE = "authorization_code";
-var KAKAO_CLIENT_id = "4fa59b6793e017cb3c54142657950f26";
-var KAKAO_REDIRECT_URL = "http://localhost:80/api/auth/kakao/redirect";
-var KAKAO_GET_USER_DATA_API_URL = "https://kapi.kakao.com/v2/user/me";
 router.get("/kakao/redirect", function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     var code;
     return __generator(this, function (_a) {
         code = req.query.code;
         try {
             axios_1["default"]
-                .post(KAKAO_OAUTH_TOKEN_API_URL + "?grant_type=" + KAKAO_GRANT_TYPE + "&client_id=" + KAKAO_CLIENT_id + "&redirect_uri=" + KAKAO_REDIRECT_URL + "&code=" + code, {
+                .post(url_1.KAKAO_URL.OAUTH_TOKEN_API_URL + "?grant_type=" + url_1.KAKAO_URL.GRANT_TYPE + "&client_id=" + url_1.KAKAO_URL.REST_API + "&redirect_uri=" + url_1.KAKAO_URL.REDIRECT_URL + "&code=" + code, {
                 headers: {
                     "Content-type": "application/x-www-form-urlencoded;charset=utf-8"
                 }
             })
-                .then(function (result) {
-                axios_1["default"]
-                    .get("" + KAKAO_GET_USER_DATA_API_URL, {
-                    headers: {
-                        Authorization: "Bearer " + result.data.access_token
+                .then(function (result) { return __awaiter(void 0, void 0, void 0, function () {
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0: return [4 /*yield*/, axios_1["default"]
+                                .get("" + url_1.KAKAO_URL.GET_USER_DATA_API_URL, {
+                                headers: {
+                                    Authorization: "Bearer " + result.data.access_token
+                                }
+                            })
+                                .then(function (response) {
+                                console.log(response.data);
+                                var query = querystring_1["default"].stringify({
+                                    accessToken: result.data.access_token,
+                                    refreshToken: result.data.refresh_token,
+                                    user_id: response.data.id,
+                                    nickname: response.data.properties.nickname,
+                                    email: response.data.kakao_account.email,
+                                    image: response.data.properties.profile_image
+                                });
+                                res.redirect("http://localhost:3000/loginSuccess?" + query);
+                            })];
+                        case 1:
+                            _a.sent();
+                            return [2 /*return*/];
                     }
-                })
-                    .then(function (response) {
-                    var query = querystring_1["default"].stringify({
-                        accessToken: result.data.access_token,
-                        refreshToken: result.data.refresh_token,
-                        nickname: response.data.properties.nickname,
-                        email: response.data.kakao_account.email,
-                        image: response.data.properties.profile_image
-                    });
-                    res.redirect("http://localhost:3000/loginSuccess?" + query);
                 });
-            })["catch"](function (e) {
-                console.log(e);
-                res.send(e);
+            }); })["catch"](function (error) {
+                console.error(error);
+                next(error);
             });
         }
-        catch (e) {
-            console.log(e);
-            res.send(e);
+        catch (error) {
+            console.log(error);
+            next(error);
         }
         return [2 /*return*/];
     });
 }); });
-router.post("/tokenValidTest", function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+router.post("/refreshKakaoToken", function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var accessToken, refreshToken, error_1;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                _a.trys.push([0, 2, , 3]);
+                accessToken = req.headers.authorization;
+                refreshToken = req.headers.refresh;
+                if (!accessToken) {
+                    return [2 /*return*/, res.status(401).send({ message: "access token 없음" })];
+                }
+                if (!refreshToken) {
+                    return [2 /*return*/, res.status(401).send({ message: "refresh token 없음" })];
+                }
+                return [4 /*yield*/, axios_1["default"]
+                        .post(url_1.KAKAO_URL.REFRESH_TOKEN + "?grant_type=refresh_token&client_id=" + url_1.KAKAO_URL.REST_API + "&refresh_token=" + refreshToken, {
+                        headers: {
+                            "Content-type": "application/x-www-form-urlencoded;charset=utf-8"
+                        }
+                    })
+                        .then(function (response) {
+                        return res.status(200).send(response.data.access_token);
+                    })["catch"](function (error) {
+                        console.log(error);
+                        return res.status(401).send({ message: error.response.data.error });
+                    })];
+            case 1:
+                _a.sent();
+                return [3 /*break*/, 3];
+            case 2:
+                error_1 = _a.sent();
+                console.error(error_1);
+                next(error_1);
+                return [3 /*break*/, 3];
+            case 3: return [2 /*return*/];
+        }
+    });
+}); });
+router.post("/kakaoLogout", auth_1.kakaoMiddleware, function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var accessToken, error_2;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                _a.trys.push([0, 2, , 3]);
+                accessToken = req.headers.authorization;
+                console.log(accessToken);
+                if (!accessToken) {
+                    return [2 /*return*/, res.status(401).send({ message: "access token 없음" })];
+                }
+                return [4 /*yield*/, axios_1["default"]({
+                        url: "" + url_1.KAKAO_URL.LOGOUT,
+                        method: "POST",
+                        headers: {
+                            "Content-type": "application/x-www-form-urlencoded;charset=utf-8",
+                            Authorization: "Bearer " + accessToken
+                        }
+                    })
+                        .then(function (response) {
+                        return res.status(200).send({ success: true });
+                    })["catch"](function (error) {
+                        console.log(error);
+                    })];
+            case 1:
+                _a.sent();
+                return [3 /*break*/, 3];
+            case 2:
+                error_2 = _a.sent();
+                console.error(error_2);
+                next(error_2);
+                return [3 /*break*/, 3];
+            case 3: return [2 /*return*/];
+        }
+    });
+}); });
+router.post("/tokenValidTest", auth_1.kakaoMiddleware, function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
         try {
-            console.log(req.headers.authorization);
+            return [2 /*return*/, res.status(200).send({ message: "유효한 토큰" })];
         }
-        catch (e) {
-            console.log(e);
-            res.send(e);
+        catch (error) {
+            console.log(error);
+            next(error);
         }
         return [2 /*return*/];
     });
