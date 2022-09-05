@@ -5,13 +5,26 @@ import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import hpp from "hpp";
 import helmet from "helmet";
-
+import passport from "passport";
+import expressSession from "express-session";
+import { sequelize } from "./models";
+import passportConfig from "./passport";
 import authRouter from "./routes/authRouter";
 dotenv.config();
+
 const app = express();
 const prod: boolean = process.env.NODE_ENV === "production";
 
 app.set("port", prod ? process.env.PORT : 80);
+passportConfig();
+sequelize
+  .sync({ force: false })
+  .then(() => {
+    console.log("데이터베이스 연결 성공");
+  })
+  .catch((err: Error) => {
+    console.error(err);
+  });
 
 if (prod) {
   app.use(hpp());
@@ -36,6 +49,21 @@ if (prod) {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser(process.env.COOKIE_SECRET));
+app.use(
+  expressSession({
+    resave: false,
+    saveUninitialized: false,
+    secret: process.env.COOKIE_SECRET!,
+    cookie: {
+      httpOnly: true,
+      secure: false, // https -> true
+      domain: prod ? ".nodebird.com" : undefined,
+    },
+    name: "rnbck",
+  })
+);
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use("/api/auth", authRouter);
 
