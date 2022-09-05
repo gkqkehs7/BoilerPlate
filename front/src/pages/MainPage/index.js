@@ -46,6 +46,7 @@ const MainPage = () => {
       },
     })
       .then(() => {
+        localStorage.clear();
         navigate("/");
       })
       .catch((error) => {
@@ -53,6 +54,7 @@ const MainPage = () => {
       });
   }, [userData.accessToken, navigate]);
 
+  console.log(userData);
   return (
     <div>
       <div>{userData.nickname}님 로그인 성공!</div>

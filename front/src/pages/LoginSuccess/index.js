@@ -14,10 +14,11 @@ const LoginSuccess = (props) => {
       accessToken: new URLSearchParams(search).get("accessToken"),
       refreshToken: new URLSearchParams(search).get("refreshToken"),
     };
-
     localStorage.setItem("userData", JSON.stringify(userData));
 
-    navigate("/mainPage");
+    if (userData) {
+      navigate("/mainPage");
+    }
   }, [search, navigate]);
 
   return <div>로그인 성공</div>;
