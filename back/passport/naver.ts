@@ -1,32 +1,43 @@
 import passport from "passport";
-import { Strategy as KakaoStrategy } from "passport-kakao";
+import {
+  Strategy as NaverStrategy,
+  Profile as NaverProfile,
+} from "passport-naver-v2";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 dotenv.config();
 
 import User from "../models/user";
 
+interface IProfile {
+  id: number;
+  response: {
+    email: string;
+    name: string;
+    profile_image: string;
+  };
+}
 export default () => {
   passport.use(
-    new KakaoStrategy(
+    new NaverStrategy(
       {
-        clientID: "4fa59b6793e017cb3c54142657950f26", // 카카오 로그인에서 발급받은 REST API 키
-        callbackURL: "http://localhost:80/api/auth/kakao/callback", // 카카오 로그인 Redirect URI 경로
+        clientID: "vBZOhVnrUvYPK9gh81IN", // 카카오 로그인에서 발급받은 REST API 키
+        clientSecret: "SjnJLwoeVT",
+        callbackURL: "http://localhost:80/api/auth/naver/callback", // 카카오 로그인 Redirect URI 경로
       },
       async (
         accessToken: string,
         refreshToken: string,
-        profile: any,
+        profile: NaverProfile,
         done: any
       ) => {
-        console.log("kakao profile", profile);
+        console.log("naver profile", profile);
+
         try {
           const exUser = await User.findOne({
-            where: { snsId: profile.id, provider: "kakao" },
+            where: { snsId: profile.id, provider: "naver" },
           });
-          // 이미 가입된 카카오 프로필이면 성공
           if (exUser) {
-            //여기서 req 객체 추가?
             const accessToken = jwt.sign({ id: exUser.id }, "jwt-secret-key", {
               algorithm: "HS256",
               expiresIn: "1d",
@@ -37,22 +48,21 @@ export default () => {
             });
 
             var user = {
-              email: profile._json.kakao_account.email,
-              nickname: profile.username,
-              ProfileImages: { src: profile._json.properties.profile_image },
+              email: profile.email,
+              nickname: profile.name,
+              snsId: profile.id,
+              ProfileImages: { src: profile.profileImage },
               accessToken: accessToken,
               refreshToken: refreshToken,
             };
 
-            done(null, user); // 로그인 인증 완료
+            done(null, user);
           } else {
-            // 가입되지 않는 유저면 회원가입 시키고 로그인을 시킨다
-
             const newUser = await User.create({
-              email: profile._json.kakao_account.email,
-              nickname: profile.username,
-              snsId: `${profile.id}`,
-              provider: "kakao",
+              email: profile.email,
+              nickname: profile.name,
+              snsId: profile.id,
+              provider: "naver",
             });
 
             const accessToken = jwt.sign({ id: newUser.id }, "jwt-secret-key", {
@@ -69,15 +79,14 @@ export default () => {
             );
 
             var user = {
-              email: profile._json.kakao_account.email,
-              nickname: profile.username,
-              ProfileImages: { src: profile._json.properties.profile_image },
+              email: profile.email,
+              nickname: profile.name,
+              snsId: profile.id,
+              ProfileImages: { src: profile.profileImage },
               accessToken: accessToken,
               refreshToken: refreshToken,
             };
-
-            // 프로필 사진까지 저장
-            done(null, user); // 회원가입하고 로그인 인증 완료
+            done(null, user);
           }
         } catch (error) {
           console.error(error);
