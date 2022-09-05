@@ -49,21 +49,7 @@ if (prod) {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser(process.env.COOKIE_SECRET));
-app.use(
-  expressSession({
-    resave: false,
-    saveUninitialized: false,
-    secret: process.env.COOKIE_SECRET!,
-    cookie: {
-      httpOnly: true,
-      secure: false, // https -> true
-      domain: prod ? ".nodebird.com" : undefined,
-    },
-    name: "rnbck",
-  })
-);
 app.use(passport.initialize());
-app.use(passport.session());
 
 app.use("/api/auth", authRouter);
 

@@ -11,7 +11,6 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const hpp_1 = __importDefault(require("hpp"));
 const helmet_1 = __importDefault(require("helmet"));
 const passport_1 = __importDefault(require("passport"));
-const express_session_1 = __importDefault(require("express-session"));
 const models_1 = require("./models");
 const passport_2 = __importDefault(require("./passport"));
 const authRouter_1 = __importDefault(require("./routes/authRouter"));
@@ -47,19 +46,7 @@ else {
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
 app.use(cookie_parser_1.default(process.env.COOKIE_SECRET));
-app.use(express_session_1.default({
-    resave: false,
-    saveUninitialized: false,
-    secret: process.env.COOKIE_SECRET,
-    cookie: {
-        httpOnly: true,
-        secure: false,
-        domain: prod ? ".nodebird.com" : undefined,
-    },
-    name: "rnbck",
-}));
 app.use(passport_1.default.initialize());
-app.use(passport_1.default.session());
 app.use("/api/auth", authRouter_1.default);
 app.use((err, req, res, next) => {
     console.error(err);

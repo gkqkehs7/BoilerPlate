@@ -20,14 +20,13 @@ User.init(
     },
     nickname: {
       type: DataTypes.STRING(20),
-      unique: true,
       allowNull: false,
     },
     password: {
       type: DataTypes.STRING(100),
     },
     snsId: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.STRING(100),
     },
     provider: {
       type: DataTypes.STRING(20),

@@ -12,14 +12,13 @@ User.init({
     },
     nickname: {
         type: sequelize_1.DataTypes.STRING(20),
-        unique: true,
         allowNull: false,
     },
     password: {
         type: sequelize_1.DataTypes.STRING(100),
     },
     snsId: {
-        type: sequelize_1.DataTypes.BIGINT,
+        type: sequelize_1.DataTypes.STRING(100),
     },
     provider: {
         type: sequelize_1.DataTypes.STRING(20),

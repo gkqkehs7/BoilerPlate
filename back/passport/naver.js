@@ -13,20 +13,21 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const passport_1 = __importDefault(require("passport"));
-const passport_kakao_1 = require("passport-kakao");
+const passport_naver_v2_1 = require("passport-naver-v2");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const user_1 = __importDefault(require("../models/user"));
 exports.default = () => {
-    passport_1.default.use(new passport_kakao_1.Strategy({
-        clientID: "4fa59b6793e017cb3c54142657950f26",
-        callbackURL: "http://localhost:80/api/auth/kakao/callback",
+    passport_1.default.use(new passport_naver_v2_1.Strategy({
+        clientID: "vBZOhVnrUvYPK9gh81IN",
+        clientSecret: "SjnJLwoeVT",
+        callbackURL: "http://localhost:80/api/auth/naver/callback",
     }, (accessToken, refreshToken, profile, done) => __awaiter(void 0, void 0, void 0, function* () {
-        console.log("kakao profile", profile);
+        console.log("naver profile", profile);
         try {
             const exUser = yield user_1.default.findOne({
-                where: { snsId: profile.id, provider: "kakao" },
+                where: { snsId: profile.id, provider: "naver" },
             });
             // 이미 가입된 카카오 프로필이면 성공
             if (exUser) {
@@ -40,9 +41,10 @@ exports.default = () => {
                     expiresIn: "14d",
                 });
                 var user = {
-                    email: profile._json.kakao_account.email,
-                    nickname: profile.username,
-                    ProfileImages: { src: profile._json.properties.profile_image },
+                    email: profile.email,
+                    nickname: profile.name,
+                    snsId: profile.id,
+                    ProfileImages: { src: profile.profileImage },
                     accessToken: accessToken,
                     refreshToken: refreshToken,
                 };
@@ -51,10 +53,10 @@ exports.default = () => {
             else {
                 // 가입되지 않는 유저면 회원가입 시키고 로그인을 시킨다
                 const newUser = yield user_1.default.create({
-                    email: profile._json.kakao_account.email,
-                    nickname: profile.username,
-                    snsId: `${profile.id}`,
-                    provider: "kakao",
+                    email: profile.email,
+                    nickname: profile.name,
+                    snsId: profile.id,
+                    provider: "naver",
                 });
                 const accessToken = jsonwebtoken_1.default.sign({ id: newUser.id }, "jwt-secret-key", {
                     algorithm: "HS256",
@@ -65,9 +67,10 @@ exports.default = () => {
                     expiresIn: "14d",
                 });
                 var user = {
-                    email: profile._json.kakao_account.email,
-                    nickname: profile.username,
-                    ProfileImages: { src: profile._json.properties.profile_image },
+                    email: profile.email,
+                    nickname: profile.name,
+                    snsId: profile.id,
+                    ProfileImages: { src: profile.profileImage },
                     accessToken: accessToken,
                     refreshToken: refreshToken,
                 };
