@@ -7,10 +7,9 @@ const LoginSuccess = (props) => {
 
   useEffect(() => {
     var userData = {
-      user_id: new URLSearchParams(search).get("user_id"),
       email: new URLSearchParams(search).get("email"),
       nickname: new URLSearchParams(search).get("nickname"),
-      image: new URLSearchParams(search).get("image"),
+      image: new URLSearchParams(search).get("profileImage"),
       accessToken: new URLSearchParams(search).get("accessToken"),
       refreshToken: new URLSearchParams(search).get("refreshToken"),
     };

@@ -4,10 +4,10 @@ import jwt from "jsonwebtoken";
 interface IDecoded {
   id: number;
 }
-
 interface IError {
   message: string;
 }
+
 const verify = (token: string) => {
   try {
     var decoded = jwt.verify(token, "jwt-secret-key") as IDecoded;
@@ -50,4 +50,12 @@ export const authMiddleWare = async (
       return res.status(500).send({ message: "server error" });
     }
   }
+};
+
+export const refresh = async (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) => {
+  var accessToken = req.headers.authorization;
 };
