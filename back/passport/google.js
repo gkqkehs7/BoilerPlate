@@ -39,7 +39,7 @@ exports.default = () => {
                     expiresIn: "14d",
                 });
                 var user = {
-                    email: profile === null || profile === void 0 ? void 0 : profile.email[0].value,
+                    email: profile === null || profile === void 0 ? void 0 : profile.emails[0].value,
                     nickname: profile.displayName,
                     ProfileImages: profile === null || profile === void 0 ? void 0 : profile.photos[0].value,
                     accessToken: accessToken,

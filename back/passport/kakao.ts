@@ -28,7 +28,7 @@ export default () => {
             //여기서 req 객체 추가?
             const accessToken = jwt.sign({ id: exUser.id }, "jwt-secret-key", {
               algorithm: "HS256",
-              expiresIn: "1d",
+              expiresIn: "20s",
             });
             const refreshToken = jwt.sign({ id: exUser.id }, "jwt-secret-key", {
               algorithm: "HS256",

@@ -36,7 +36,7 @@ export default () => {
               expiresIn: "14d",
             });
             var user = {
-              email: profile?.email[0].value,
+              email: profile?.emails[0].value,
               nickname: profile.displayName,
               ProfileImages: profile?.photos[0].value,
               accessToken: accessToken,

@@ -2,7 +2,7 @@ import express from "express";
 import axios from "axios";
 import querystring from "querystring";
 import { KAKAO_URL } from "../constants/url";
-import { kakaoMiddleware } from "../middlewares/auth";
+import { authMiddleWare } from "../middlewares/auth";
 import passport from "passport";
 const router = express.Router();
 
@@ -78,8 +78,9 @@ router.get(
   }
 );
 
-router.post("/tokenValidTest", kakaoMiddleware, async (req, res, next) => {
+router.post("/tokenValidTest", authMiddleWare, async (req, res, next) => {
   try {
+    console.log(req.myId);
     return res.status(200).send({ message: "유효한 토큰" });
   } catch (error) {
     console.log(error);

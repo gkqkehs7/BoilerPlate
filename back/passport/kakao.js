@@ -32,7 +32,7 @@ exports.default = () => {
                 //여기서 req 객체 추가?
                 const accessToken = jsonwebtoken_1.default.sign({ id: exUser.id }, "jwt-secret-key", {
                     algorithm: "HS256",
-                    expiresIn: "1d",
+                    expiresIn: "20s",
                 });
                 const refreshToken = jsonwebtoken_1.default.sign({ id: exUser.id }, "jwt-secret-key", {
                     algorithm: "HS256",

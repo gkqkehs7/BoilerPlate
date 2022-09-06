@@ -67,8 +67,9 @@ router.get("/google/callback", passport_1.default.authenticate("google", {
     });
     res.redirect("http://localhost:3000/loginSuccess?" + query);
 });
-router.post("/tokenValidTest", auth_1.kakaoMiddleware, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+router.post("/tokenValidTest", auth_1.authMiddleWare, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        console.log(req.myId);
         return res.status(200).send({ message: "유효한 토큰" });
     }
     catch (error) {

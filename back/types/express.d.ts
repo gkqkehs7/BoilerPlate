@@ -10,6 +10,7 @@ declare global {
         email: string;
         ProfileImages: string;
       };
+      myId?: number;
     }
   }
 }
