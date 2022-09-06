@@ -29,9 +29,7 @@ exports.default = () => {
             const exUser = yield user_1.default.findOne({
                 where: { snsId: profile.id, provider: "naver" },
             });
-            // 이미 가입된 카카오 프로필이면 성공
             if (exUser) {
-                //여기서 req 객체 추가?
                 const accessToken = jsonwebtoken_1.default.sign({ id: exUser.id }, "jwt-secret-key", {
                     algorithm: "HS256",
                     expiresIn: "1d",
@@ -44,14 +42,13 @@ exports.default = () => {
                     email: profile.email,
                     nickname: profile.name,
                     snsId: profile.id,
-                    ProfileImages: { src: profile.profileImage },
+                    ProfileImages: profile.profileImage,
                     accessToken: accessToken,
                     refreshToken: refreshToken,
                 };
-                done(null, user); // 로그인 인증 완료
+                done(null, user);
             }
             else {
-                // 가입되지 않는 유저면 회원가입 시키고 로그인을 시킨다
                 const newUser = yield user_1.default.create({
                     email: profile.email,
                     nickname: profile.name,
@@ -70,12 +67,11 @@ exports.default = () => {
                     email: profile.email,
                     nickname: profile.name,
                     snsId: profile.id,
-                    ProfileImages: { src: profile.profileImage },
+                    ProfileImages: profile.profileImage,
                     accessToken: accessToken,
                     refreshToken: refreshToken,
                 };
-                // 프로필 사진까지 저장
-                done(null, user); // 회원가입하고 로그인 인증 완료
+                done(null, user);
             }
         }
         catch (error) {

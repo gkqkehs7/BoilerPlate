@@ -3,7 +3,14 @@ import axios from "axios";
 declare global {
   namespace Express {
     interface Request {
-      kakaoId?: number;
+      user?: {
+        accessToken: string;
+        refreshToken: string;
+        nickname: string;
+        email: string;
+        ProfileImages: string;
+      };
+      myId?: number;
     }
   }
 }

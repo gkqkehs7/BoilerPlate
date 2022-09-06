@@ -51,7 +51,7 @@ export default () => {
               email: profile.email,
               nickname: profile.name,
               snsId: profile.id,
-              ProfileImages: { src: profile.profileImage },
+              ProfileImages: profile.profileImage,
               accessToken: accessToken,
               refreshToken: refreshToken,
             };
@@ -82,7 +82,7 @@ export default () => {
               email: profile.email,
               nickname: profile.name,
               snsId: profile.id,
-              ProfileImages: { src: profile.profileImage },
+              ProfileImages: profile.profileImage,
               accessToken: accessToken,
               refreshToken: refreshToken,
             };
