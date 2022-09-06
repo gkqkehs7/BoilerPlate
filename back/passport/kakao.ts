@@ -19,7 +19,6 @@ export default () => {
         profile: any,
         done: any
       ) => {
-        console.log("kakao profile", profile);
         try {
           const exUser = await User.findOne({
             where: { snsId: profile.id, provider: "kakao" },
@@ -39,7 +38,7 @@ export default () => {
             var user = {
               email: profile._json.kakao_account.email,
               nickname: profile.username,
-              ProfileImages: { src: profile._json.properties.profile_image },
+              ProfileImages: profile._json.properties.profile_image,
               accessToken: accessToken,
               refreshToken: refreshToken,
             };
@@ -71,7 +70,7 @@ export default () => {
             var user = {
               email: profile._json.kakao_account.email,
               nickname: profile.username,
-              ProfileImages: { src: profile._json.properties.profile_image },
+              ProfileImages: profile._json.properties.profile_image,
               accessToken: accessToken,
               refreshToken: refreshToken,
             };

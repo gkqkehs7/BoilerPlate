@@ -1,41 +1,30 @@
 import passport from "passport";
-import {
-  Strategy as NaverStrategy,
-  Profile as NaverProfile,
-} from "passport-naver-v2";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 dotenv.config();
 
 import User from "../models/user";
 
-interface IProfile {
-  id: number;
-  response: {
-    email: string;
-    name: string;
-    profile_image: string;
-  };
-}
 export default () => {
   passport.use(
-    new NaverStrategy(
+    new GoogleStrategy(
       {
-        clientID: "vBZOhVnrUvYPK9gh81IN", // 카카오 로그인에서 발급받은 REST API 키
-        clientSecret: "SjnJLwoeVT",
-        callbackURL: "http://localhost:80/api/auth/naver/callback", // 카카오 로그인 Redirect URI 경로
+        clientID:
+          "988903634022-8ai89kdqd5fdr349q9e9bvlfcq2p1npr.apps.googleusercontent.com", // 카카오 로그인에서 발급받은 REST API 키
+        clientSecret: "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",
+        callbackURL: "http://localhost:80/api/auth/google/callback", // 카카오 로그인 Redirect URI 경로
       },
       async (
         accessToken: string,
         refreshToken: string,
-        profile: NaverProfile,
+        profile: any,
         done: any
       ) => {
-        console.log("naver profile", profile);
-
+        console.log(profile);
         try {
           const exUser = await User.findOne({
-            where: { snsId: profile.id, provider: "naver" },
+            where: { snsId: profile.id, provider: "google" },
           });
           if (exUser) {
             const accessToken = jwt.sign({ id: exUser.id }, "jwt-secret-key", {
@@ -46,25 +35,21 @@ export default () => {
               algorithm: "HS256",
               expiresIn: "14d",
             });
-
             var user = {
-              email: profile.email,
-              nickname: profile.name,
-              snsId: profile.id,
-              ProfileImages: profile.profileImage,
+              email: profile?.email[0].value,
+              nickname: profile.displayName,
+              ProfileImages: profile?.photos[0].value,
               accessToken: accessToken,
               refreshToken: refreshToken,
             };
-
             done(null, user);
           } else {
             const newUser = await User.create({
-              email: profile.email,
-              nickname: profile.name,
+              email: profile?.emails[0].value,
+              nickname: profile.displayName,
               snsId: profile.id,
-              provider: "naver",
+              provider: "google",
             });
-
             const accessToken = jwt.sign({ id: newUser.id }, "jwt-secret-key", {
               algorithm: "HS256",
               expiresIn: "1d",
@@ -77,16 +62,15 @@ export default () => {
                 expiresIn: "14d",
               }
             );
-
             var user = {
-              email: profile.email,
-              nickname: profile.name,
-              snsId: profile.id,
-              ProfileImages: profile.profileImage,
+              email: profile?.emails[0].value,
+              nickname: profile.displayName,
+              ProfileImages: profile?.photos[0].value,
               accessToken: accessToken,
               refreshToken: refreshToken,
             };
-            done(null, user);
+            // 프로필 사진까지 저장
+            done(null, user); // 회원가입하고 로그인 인증 완료
           }
         } catch (error) {
           console.error(error);
