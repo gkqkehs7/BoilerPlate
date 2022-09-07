@@ -7,7 +7,7 @@ const kakao_1 = __importDefault(require("./kakao"));
 const naver_1 = __importDefault(require("./naver"));
 const google_1 = __importDefault(require("./google"));
 exports.default = () => {
-    kakao_1.default();
-    naver_1.default();
-    google_1.default();
+    (0, kakao_1.default)();
+    (0, naver_1.default)();
+    (0, google_1.default)();
 };

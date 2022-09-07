@@ -2,6 +2,7 @@ import passport from "passport";
 import { Strategy as KakaoStrategy } from "passport-kakao";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import { redisClient } from "../redis";
 dotenv.config();
 
 import User from "../models/user";
@@ -43,6 +44,9 @@ export default () => {
               refreshToken: refreshToken,
             };
 
+            await redisClient.connect();
+
+            redisClient.set(`${exUser.id}`, refreshToken);
             done(null, user); // 로그인 인증 완료
           } else {
             // 가입되지 않는 유저면 회원가입 시키고 로그인을 시킨다
