@@ -18,6 +18,7 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const user_1 = __importDefault(require("../models/user"));
+const redis_1 = require("../redis");
 exports.default = () => {
     passport_1.default.use(new passport_naver_v2_1.Strategy({
         clientID: "vBZOhVnrUvYPK9gh81IN",
@@ -46,6 +47,7 @@ exports.default = () => {
                     accessToken: accessToken,
                     refreshToken: refreshToken,
                 };
+                yield redis_1.redisClient.set(`${exUser.id}`, refreshToken);
                 done(null, user);
             }
             else {
@@ -71,6 +73,7 @@ exports.default = () => {
                     accessToken: accessToken,
                     refreshToken: refreshToken,
                 };
+                yield redis_1.redisClient.set(`${newUser.id}`, refreshToken);
                 done(null, user);
             }
         }

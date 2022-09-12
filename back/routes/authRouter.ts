@@ -1,11 +1,51 @@
 import express from "express";
-import axios from "axios";
 import querystring from "querystring";
-import { KAKAO_URL } from "../constants/url";
-import { authMiddleWare, refresh } from "../middlewares/auth";
 import passport from "passport";
+import bcrypt from "bcrypt";
+
 import { redisClient } from "../redis";
+import { authMiddleWare, refresh } from "../middlewares/auth";
+import User from "../models/user";
 const router = express.Router();
+
+router.post("/signIn", (req, res, next) => {
+  passport.authenticate("local", { session: false }, (err, user, info) => {
+    if (err) {
+      console.error(err);
+      return next(err);
+    }
+    if (info) {
+      return res.status(401).send(info.message);
+    }
+    return res.status(200).send(user);
+  })(req, res, next);
+});
+
+router.post("/signUp", async (req, res, next) => {
+  try {
+    const exUser = await User.findOne({
+      where: { email: req.body.email, provider: "local" },
+    });
+
+    if (exUser) {
+      return res.status(403).send("이미 사용중인 아이디 입니다");
+    }
+
+    const hashedPassword = await bcrypt.hash(req.body.password, 12);
+
+    await User.create({
+      email: req.body.email,
+      nickname: req.body.nickname,
+      password: hashedPassword,
+      provider: "local",
+    });
+
+    return res.status(201).send({ succes: true });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
 
 router.get("/kakao", passport.authenticate("kakao", { session: false }));
 router.get(
@@ -83,13 +123,11 @@ router.get("/refreshToken", refresh);
 
 router.get("/logout", authMiddleWare, async (req, res, next) => {
   try {
-    await redisClient.connect();
-
     await redisClient.get(`${req.myId}`).then(() => {
       redisClient.del(`${req.myId}`);
     });
 
-    return res.status(200).send({ message: "ok" });
+    return res.status(200).send({ success: true });
   } catch (error) {
     console.error(error);
     next(error);

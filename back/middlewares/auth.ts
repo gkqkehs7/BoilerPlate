@@ -1,5 +1,6 @@
 import express from "express";
 import jwt from "jsonwebtoken";
+import { redisClient } from "../redis";
 
 interface IDecoded {
   id: number;
@@ -58,7 +59,7 @@ export const refresh = async (
   next: express.NextFunction
 ) => {
   var accessToken = req.headers.authorization;
-  var refreshToken = req.headers.refreshToken as string;
+  var refreshToken = req.headers.refresh;
 
   if (!accessToken) {
     return res
@@ -69,12 +70,16 @@ export const refresh = async (
   if (!refreshToken) {
     return res
       .status(401)
-      .send({ message: "accessToken이 지급되지 않았습니다" });
+      .send({ message: "refreshToken이 지급되지 않았습니다" });
   }
 
-  var result = verify(refreshToken);
+  var result = verify(refreshToken as string);
 
   if (result.ok) {
+    await redisClient.get(`${result.id}`).then(() => {
+      redisClient.del(`${result.id}`);
+    });
+
     const accessToken = jwt.sign({ id: result.id }, "jwt-secret-key", {
       algorithm: "HS256",
       expiresIn: "20s",
@@ -84,13 +89,14 @@ export const refresh = async (
       expiresIn: "14d",
     });
 
+    await redisClient.set(`${result.id}`, refreshToken);
+
     return res.status(200).send({
       ok: true,
       data: { accessToken: accessToken, refreshToken: refreshToken },
     });
   } else {
     if (result.message == "jwt expired") {
-      // refreshtoken조차 만료되어 로그아웃
       return res
         .status(402)
         .send({ message: "세션이 만료되었습니다 다시 로그인 해주세요" });

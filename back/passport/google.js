@@ -18,13 +18,13 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const user_1 = __importDefault(require("../models/user"));
+const redis_1 = require("../redis");
 exports.default = () => {
     passport_1.default.use(new passport_google_oauth20_1.Strategy({
-        clientID: "988903634022-8ai89kdqd5fdr349q9e9bvlfcq2p1npr.apps.googleusercontent.com",
+        clientID: `${process.env.GOOGLE_CLIENT_ID}`,
         clientSecret: "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",
         callbackURL: "http://localhost:80/api/auth/google/callback", // 카카오 로그인 Redirect URI 경로
     }, (accessToken, refreshToken, profile, done) => __awaiter(void 0, void 0, void 0, function* () {
-        console.log(profile);
         try {
             const exUser = yield user_1.default.findOne({
                 where: { snsId: profile.id, provider: "google" },
@@ -45,6 +45,7 @@ exports.default = () => {
                     accessToken: accessToken,
                     refreshToken: refreshToken,
                 };
+                yield redis_1.redisClient.set(`${exUser.id}`, refreshToken);
                 done(null, user);
             }
             else {
@@ -69,6 +70,7 @@ exports.default = () => {
                     accessToken: accessToken,
                     refreshToken: refreshToken,
                 };
+                yield redis_1.redisClient.set(`${newUser.id}`, refreshToken);
                 // 프로필 사진까지 저장
                 done(null, user); // 회원가입하고 로그인 인증 완료
             }

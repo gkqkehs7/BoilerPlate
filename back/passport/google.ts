@@ -5,14 +5,14 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import User from "../models/user";
+import { redisClient } from "../redis";
 
 export default () => {
   passport.use(
     new GoogleStrategy(
       {
-        clientID:
-          "988903634022-8ai89kdqd5fdr349q9e9bvlfcq2p1npr.apps.googleusercontent.com", // 카카오 로그인에서 발급받은 REST API 키
-        clientSecret: "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",
+        clientID: `${process.env.GOOGLE_CLIENT_ID}`, // 카카오 로그인에서 발급받은 REST API 키
+        clientSecret: `${process.env.GOOGLE_CLIENT_SECRET}`,
         callbackURL: "http://localhost:80/api/auth/google/callback", // 카카오 로그인 Redirect URI 경로
       },
       async (
@@ -21,7 +21,6 @@ export default () => {
         profile: any,
         done: any
       ) => {
-        console.log(profile);
         try {
           const exUser = await User.findOne({
             where: { snsId: profile.id, provider: "google" },
@@ -42,6 +41,8 @@ export default () => {
               accessToken: accessToken,
               refreshToken: refreshToken,
             };
+
+            await redisClient.set(`${exUser.id}`, refreshToken);
             done(null, user);
           } else {
             const newUser = await User.create({
@@ -69,6 +70,8 @@ export default () => {
               accessToken: accessToken,
               refreshToken: refreshToken,
             };
+
+            await redisClient.set(`${newUser.id}`, refreshToken);
             // 프로필 사진까지 저장
             done(null, user); // 회원가입하고 로그인 인증 완료
           }

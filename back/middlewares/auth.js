@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.refresh = exports.authMiddleWare = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const redis_1 = require("../redis");
 const verify = (token) => {
     try {
         var decoded = jsonwebtoken_1.default.verify(token, "jwt-secret-key");
@@ -57,7 +58,7 @@ const authMiddleWare = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
 exports.authMiddleWare = authMiddleWare;
 const refresh = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var accessToken = req.headers.authorization;
-    var refreshToken = req.headers.refreshToken;
+    var refreshToken = req.headers.refresh;
     if (!accessToken) {
         return res
             .status(401)
@@ -66,10 +67,13 @@ const refresh = (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
     if (!refreshToken) {
         return res
             .status(401)
-            .send({ message: "accessToken이 지급되지 않았습니다" });
+            .send({ message: "refreshToken이 지급되지 않았습니다" });
     }
     var result = verify(refreshToken);
     if (result.ok) {
+        yield redis_1.redisClient.get(`${result.id}`).then(() => {
+            redis_1.redisClient.del(`${result.id}`);
+        });
         const accessToken = jsonwebtoken_1.default.sign({ id: result.id }, "jwt-secret-key", {
             algorithm: "HS256",
             expiresIn: "20s",
@@ -78,6 +82,7 @@ const refresh = (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
             algorithm: "HS256",
             expiresIn: "14d",
         });
+        yield redis_1.redisClient.set(`${result.id}`, refreshToken);
         return res.status(200).send({
             ok: true,
             data: { accessToken: accessToken, refreshToken: refreshToken },
@@ -85,7 +90,6 @@ const refresh = (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
     }
     else {
         if (result.message == "jwt expired") {
-            // refreshtoken조차 만료되어 로그아웃
             return res
                 .status(402)
                 .send({ message: "세션이 만료되었습니다 다시 로그인 해주세요" });
