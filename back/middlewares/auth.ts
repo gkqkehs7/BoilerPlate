@@ -58,4 +58,46 @@ export const refresh = async (
   next: express.NextFunction
 ) => {
   var accessToken = req.headers.authorization;
+  var refreshToken = req.headers.refreshToken as string;
+
+  if (!accessToken) {
+    return res
+      .status(401)
+      .send({ message: "accessToken이 지급되지 않았습니다" });
+  }
+
+  if (!refreshToken) {
+    return res
+      .status(401)
+      .send({ message: "accessToken이 지급되지 않았습니다" });
+  }
+
+  var result = verify(refreshToken);
+
+  if (result.ok) {
+    const accessToken = jwt.sign({ id: result.id }, "jwt-secret-key", {
+      algorithm: "HS256",
+      expiresIn: "20s",
+    });
+    const refreshToken = jwt.sign({ id: result.id }, "jwt-secret-key", {
+      algorithm: "HS256",
+      expiresIn: "14d",
+    });
+
+    return res.status(200).send({
+      ok: true,
+      data: { accessToken: accessToken, refreshToken: refreshToken },
+    });
+  } else {
+    if (result.message == "jwt expired") {
+      // refreshtoken조차 만료되어 로그아웃
+      return res
+        .status(402)
+        .send({ message: "세션이 만료되었습니다 다시 로그인 해주세요" });
+    } else if (result.message == "jwt malformed") {
+      return res.status(401).send({ message: result.message });
+    } else {
+      return res.status(500).send({ message: "server error" });
+    }
+  }
 };

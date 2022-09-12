@@ -16,6 +16,7 @@ const express_1 = __importDefault(require("express"));
 const querystring_1 = __importDefault(require("querystring"));
 const auth_1 = require("../middlewares/auth");
 const passport_1 = __importDefault(require("passport"));
+const redis_1 = require("../redis");
 const router = express_1.default.Router();
 router.get("/kakao", passport_1.default.authenticate("kakao", { session: false }));
 router.get("/kakao/callback", passport_1.default.authenticate("kakao", {
@@ -67,6 +68,20 @@ router.get("/google/callback", passport_1.default.authenticate("google", {
     });
     res.redirect("http://localhost:3000/loginSuccess?" + query);
 });
+router.get("/refreshToken", auth_1.refresh);
+router.get("/logout", auth_1.authMiddleWare, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        yield redis_1.redisClient.connect();
+        yield redis_1.redisClient.get(`${req.myId}`).then(() => {
+            redis_1.redisClient.del(`${req.myId}`);
+        });
+        return res.status(200).send({ message: "ok" });
+    }
+    catch (error) {
+        console.error(error);
+        next(error);
+    }
+}));
 router.post("/tokenValidTest", auth_1.authMiddleWare, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         console.log(req.myId);

@@ -16,12 +16,13 @@ const passport_1 = __importDefault(require("passport"));
 const passport_kakao_1 = require("passport-kakao");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const dotenv_1 = __importDefault(require("dotenv"));
+const redis_1 = require("../redis");
 dotenv_1.default.config();
 const user_1 = __importDefault(require("../models/user"));
 exports.default = () => {
     passport_1.default.use(new passport_kakao_1.Strategy({
         clientID: "4fa59b6793e017cb3c54142657950f26",
-        callbackURL: "http://localhost:80/api/auth/kakao/callback",
+        callbackURL: "http://localhost:80/api/auth/kakao/callback", // 카카오 로그인 Redirect URI 경로
     }, (accessToken, refreshToken, profile, done) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             const exUser = yield user_1.default.findOne({
@@ -45,6 +46,8 @@ exports.default = () => {
                     accessToken: accessToken,
                     refreshToken: refreshToken,
                 };
+                yield redis_1.redisClient.connect();
+                redis_1.redisClient.set(`${exUser.id}`, refreshToken);
                 done(null, user); // 로그인 인증 완료
             }
             else {

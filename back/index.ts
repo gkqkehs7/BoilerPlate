@@ -6,7 +6,6 @@ import dotenv from "dotenv";
 import hpp from "hpp";
 import helmet from "helmet";
 import passport from "passport";
-import expressSession from "express-session";
 import { sequelize } from "./models";
 import passportConfig from "./passport";
 import authRouter from "./routes/authRouter";

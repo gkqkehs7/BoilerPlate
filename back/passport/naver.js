@@ -22,7 +22,7 @@ exports.default = () => {
     passport_1.default.use(new passport_naver_v2_1.Strategy({
         clientID: "vBZOhVnrUvYPK9gh81IN",
         clientSecret: "SjnJLwoeVT",
-        callbackURL: "http://localhost:80/api/auth/naver/callback",
+        callbackURL: "http://localhost:80/api/auth/naver/callback", // 카카오 로그인 Redirect URI 경로
     }, (accessToken, refreshToken, profile, done) => __awaiter(void 0, void 0, void 0, function* () {
         console.log("naver profile", profile);
         try {

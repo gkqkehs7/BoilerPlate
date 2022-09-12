@@ -2,8 +2,9 @@ import express from "express";
 import axios from "axios";
 import querystring from "querystring";
 import { KAKAO_URL } from "../constants/url";
-import { authMiddleWare } from "../middlewares/auth";
+import { authMiddleWare, refresh } from "../middlewares/auth";
 import passport from "passport";
+import { redisClient } from "../redis";
 const router = express.Router();
 
 router.get("/kakao", passport.authenticate("kakao", { session: false }));
@@ -77,6 +78,23 @@ router.get(
     res.redirect("http://localhost:3000/loginSuccess?" + query);
   }
 );
+
+router.get("/refreshToken", refresh);
+
+router.get("/logout", authMiddleWare, async (req, res, next) => {
+  try {
+    await redisClient.connect();
+
+    await redisClient.get(`${req.myId}`).then(() => {
+      redisClient.del(`${req.myId}`);
+    });
+
+    return res.status(200).send({ message: "ok" });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
 
 router.post("/tokenValidTest", authMiddleWare, async (req, res, next) => {
   try {
