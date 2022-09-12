@@ -8,6 +8,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import User from "../models/user";
+import { redisClient } from "../redis";
 
 interface IProfile {
   id: number;
@@ -21,8 +22,8 @@ export default () => {
   passport.use(
     new NaverStrategy(
       {
-        clientID: "vBZOhVnrUvYPK9gh81IN", // 카카오 로그인에서 발급받은 REST API 키
-        clientSecret: "SjnJLwoeVT",
+        clientID: `${process.env.NAVER_CLIENT_ID}`, // 카카오 로그인에서 발급받은 REST API 키
+        clientSecret: `${process.env.NAVER_CLIENT_SECRET}`,
         callbackURL: "http://localhost:80/api/auth/naver/callback", // 카카오 로그인 Redirect URI 경로
       },
       async (
@@ -56,6 +57,7 @@ export default () => {
               refreshToken: refreshToken,
             };
 
+            await redisClient.set(`${exUser.id}`, refreshToken);
             done(null, user);
           } else {
             const newUser = await User.create({
@@ -86,6 +88,8 @@ export default () => {
               accessToken: accessToken,
               refreshToken: refreshToken,
             };
+
+            await redisClient.set(`${newUser.id}`, refreshToken);
             done(null, user);
           }
         } catch (error) {

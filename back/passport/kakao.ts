@@ -11,7 +11,7 @@ export default () => {
   passport.use(
     new KakaoStrategy(
       {
-        clientID: "4fa59b6793e017cb3c54142657950f26", // 카카오 로그인에서 발급받은 REST API 키
+        clientID: `${process.env.KAKAO_REST_API}`, // 카카오 로그인에서 발급받은 REST API 키
         callbackURL: "http://localhost:80/api/auth/kakao/callback", // 카카오 로그인 Redirect URI 경로
       },
       async (
@@ -44,9 +44,7 @@ export default () => {
               refreshToken: refreshToken,
             };
 
-            await redisClient.connect();
-
-            redisClient.set(`${exUser.id}`, refreshToken);
+            await redisClient.set(`${exUser.id}`, refreshToken);
             done(null, user); // 로그인 인증 완료
           } else {
             // 가입되지 않는 유저면 회원가입 시키고 로그인을 시킨다
@@ -80,6 +78,7 @@ export default () => {
             };
 
             // 프로필 사진까지 저장
+            await redisClient.set(`${newUser.id}`, refreshToken);
             done(null, user); // 회원가입하고 로그인 인증 완료
           }
         } catch (error) {

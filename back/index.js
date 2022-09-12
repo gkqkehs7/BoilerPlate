@@ -14,6 +14,7 @@ const passport_1 = __importDefault(require("passport"));
 const models_1 = require("./models");
 const passport_2 = __importDefault(require("./passport"));
 const authRouter_1 = __importDefault(require("./routes/authRouter"));
+const redis_1 = require("./redis");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const prod = process.env.NODE_ENV === "production";
@@ -58,3 +59,4 @@ app.get("/", (req, res, next) => {
 app.listen(app.get("port"), () => {
     console.log(`server is running on ${app.get("port")}`);
 });
+(0, redis_1.startRedis)();

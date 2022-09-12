@@ -9,6 +9,7 @@ import passport from "passport";
 import { sequelize } from "./models";
 import passportConfig from "./passport";
 import authRouter from "./routes/authRouter";
+import { startRedis } from "./redis";
 dotenv.config();
 
 const app = express();
@@ -71,3 +72,5 @@ app.get("/", (req, res, next) => {
 app.listen(app.get("port"), () => {
   console.log(`server is running on ${app.get("port")}`);
 });
+
+startRedis();
